@@ -1,4 +1,5 @@
-import { Appointment, Treatment, Bill, Patient } from '../models';
+import { Appointment, Treatment, Bill, Patient } from '../models/index.js';
+import { Doctor, Notification } from '../models/index.js';
 
 // Get pending appointments
 export async function getPendingAppointments(req, res) {
@@ -17,14 +18,34 @@ export async function getPendingAppointments(req, res) {
 // Approve/reject appointment
 export async function updateAppointmentStatus(req, res) {
   const { appointmentId } = req.params;
-  const { status } = req.body; // 'approved' or 'rejected'
+  const { status } = req.body; // should be 'approved' or 'rejected'
+
   try {
-    const appointment = await Appointment.findByPk(appointmentId);
+    const appointment = await Appointment.findByPk(appointmentId, {
+      include: [{ model: Doctor }]
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    // Update status
     appointment.status = status;
     await appointment.save();
-    res.json(appointment);
+
+    // Create notification for patient
+    const doctorName = appointment.Doctor.name;
+    const message = `Your appointment with Dr. ${doctorName} has been ${status}.`;
+
+    await Notification.create({
+      patientId: appointment.patientId,
+      message
+    });
+
+    res.json({ message: 'Status updated and notification sent.', appointment });
   } catch (err) {
-    res.status(500).json({ error: 'Failed to update status' });
+    console.error(err);
+    res.status(500).json({ error: 'Failed to update status and notify' });
   }
 }
 

@@ -1,4 +1,4 @@
-import { Patient, Appointment, Treatment, Bill, Feedback, Doctor, Department } from '../models';
+import { Patient, Appointment, Treatment, Bill, Feedback, Doctor, Department } from '../models/index.js';
 
 // Get patient profile
 export async function getProfile(req, res) {
