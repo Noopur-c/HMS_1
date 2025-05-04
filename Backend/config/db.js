@@ -1,17 +1,19 @@
 import { Sequelize } from 'sequelize';
-require('dotenv').config();
 
+// Directly pass the configuration values here
 const sequelize = new Sequelize(
-  process.env.MYSQL_DB,
-  process.env.MYSQL_USER,
-  process.env.MYSQL_PASSWORD,
+  'hospital_db',      
+  'root',            
+  'Noopur',          
   {
-    host: process.env.MYSQL_HOST,
-    port: process.env.MYSQL_PORT,
-    dialect: 'mysql',
-    logging: false,
+    host: 'localhost', 
+    port: 3306,        
+    dialect: 'mysql',  
+    logging: false,    
   }
 );
 
 export default sequelize;
+
+
 
