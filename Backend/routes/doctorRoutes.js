@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router();
-import { getPendingAppointments, updateAppointmentStatus, getTodaysAppointments, updateTreatment, generateBill, getPatientHistory } from '../controllers/doctorController';
+import { getPendingAppointments, updateAppointmentStatus, getTodaysAppointments, updateTreatment, generateBill, getPatientHistory } from '../controllers/doctorController.js';
 
 // Pending appointments
 router.get('/:doctorId/pending-appointments', getPendingAppointments);

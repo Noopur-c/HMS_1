@@ -1,6 +1,6 @@
 import { Router } from 'express';
 const router = Router();
-import { getStats, getDoctors, getPatients, searchUsers } from '../controllers/adminController';
+import { getStats, getDoctors, getPatients, searchUsers } from '../controllers/adminController.js';
 
 // Clinic stats
 router.get('/stats', getStats);
