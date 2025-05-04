@@ -1,13 +1,23 @@
-import express, { json } from 'express';
+import express from 'express';
+import {json} from 'express';
 const app = express();
-import { sequelize } from './models';
+import { sequelize } from './models/index.js';
+import cors from 'cors';
+app.use(cors());
+
 
 app.use(json());
 
 // Route imports
-import patientRoutes from './routes/patientRoutes';
-import doctorRoutes from './routes/doctorRoutes';
-import adminRoutes from './routes/adminRoutes';
+import patientRoutes from './routes/patientRoutes.js';
+import doctorRoutes from './routes/doctorRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+
+import authRoutes from './routes/authRoutes.js';
+app.use('/api/auth', authRoutes);
+
+import notificationRoutes from './routes/notificationRoutes.js';
+app.use('/api/notifications', notificationRoutes);
 
 // Route mounting
 app.use('/api/patients', patientRoutes);
