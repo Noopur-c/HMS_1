@@ -1,39 +1,44 @@
-import sequelize from '../config/db';
+import sequelize from '../config/db.js';
 
-import Department, { hasMany } from './department';
-import Doctor, { belongsTo, hasMany as _hasMany } from './doctor';
-import Patient, { hasMany as __hasMany } from './patient';
-import Appointment, { belongsTo as _belongsTo, hasOne } from './appointment';
-import Treatment, { belongsTo as __belongsTo } from './treatment';
-import Bill, { belongsTo as ___belongsTo } from './bill';
-import Feedback, { belongsTo as ____belongsTo } from './feedback';
+import Department from './department.js';
+import Doctor from './doctor.js';
+import Patient from './patient.js';
+import Appointment from './appointment.js';
+import Treatment from './treatment.js';
+import Bill from './bill.js';
+import Feedback from './feedback.js';
+import Notification from './notification.js';
+import Admin from './admin.js';
 
-// Associations
-belongsTo(Department, { foreignKey: 'departmentId' });
-hasMany(Doctor, { foreignKey: 'departmentId' });
+// Define relationships (clean version)
+Doctor.belongsTo(Department, { foreignKey: 'departmentId' });
+Department.hasMany(Doctor, { foreignKey: 'departmentId' });
 
-_belongsTo(Patient, { foreignKey: 'patientId' });
-_belongsTo(Doctor, { foreignKey: 'doctorId' });
-__hasMany(Appointment, { foreignKey: 'patientId' });
-_hasMany(Appointment, { foreignKey: 'doctorId' });
+Appointment.belongsTo(Patient, { foreignKey: 'patientId' });
+Appointment.belongsTo(Doctor, { foreignKey: 'doctorId' });
 
-__belongsTo(Appointment, { foreignKey: 'appointmentId' });
-hasOne(Treatment, { foreignKey: 'appointmentId' });
+Patient.hasMany(Appointment, { foreignKey: 'patientId' });
+Doctor.hasMany(Appointment, { foreignKey: 'doctorId' });
 
-___belongsTo(Appointment, { foreignKey: 'appointmentId' });
-hasOne(Bill, { foreignKey: 'appointmentId' });
+Treatment.belongsTo(Appointment, { foreignKey: 'appointmentId' });
+Appointment.hasOne(Treatment, { foreignKey: 'appointmentId' });
 
-____belongsTo(Appointment, { foreignKey: 'appointmentId' });
-hasOne(Feedback, { foreignKey: 'appointmentId' });
+Bill.belongsTo(Appointment, { foreignKey: 'appointmentId' });
+Appointment.hasOne(Bill, { foreignKey: 'appointmentId' });
 
-export default {
+Feedback.belongsTo(Appointment, { foreignKey: 'appointmentId' });
+Appointment.hasOne(Feedback, { foreignKey: 'appointmentId' });
+
+// Export all models
+export {
   sequelize,
-  Department,
-  Doctor,
   Patient,
+  Doctor,
+  Admin,
+  Department,
   Appointment,
   Treatment,
   Bill,
-  Feedback
+  Feedback,
+  Notification
 };
-

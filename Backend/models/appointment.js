@@ -1,27 +1,12 @@
 import { DataTypes } from 'sequelize';
-import { define } from '../config/db';
-import Patient, { hasMany } from './patient';
-import Doctor, { hasMany as _hasMany } from './doctor';
+import sequelize from '../config/db.js';
 
-const Appointment = define('Appointment', {
-  date: {
-    type: DataTypes.DATEONLY,
-    allowNull: false
-  },
-  time: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  status: {
-    type: DataTypes.ENUM('pending', 'approved', 'rejected', 'completed'),
-    defaultValue: 'pending'
-  }
+const Appointment = sequelize.define('Appointment', {
+  date: { type: DataTypes.DATEONLY, allowNull: false },
+  time: { type: DataTypes.STRING, allowNull: false },
+  status: { type: DataTypes.STRING, defaultValue: 'scheduled' }
 });
 
-// Associations
-Appointment.belongsTo(Patient, { foreignKey: 'patientId' });
-Appointment.belongsTo(Doctor, { foreignKey: 'doctorId' });
-hasMany(Appointment, { foreignKey: 'patientId' });
-_hasMany(Appointment, { foreignKey: 'doctorId' });
-
 export default Appointment;
+
+
