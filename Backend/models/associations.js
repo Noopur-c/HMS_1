@@ -1,37 +1,40 @@
-import Doctor from './doctor.js';
-import Department from './department.js';
-import Patient from './patient.js';
+import Admin from './admin.js';
 import Appointment from './appointment.js';
 import Bill from './bill.js';
+import Department from './department.js';
+import Doctor from './doctor.js';
 import Feedback from './feedback.js';
 import Notification from './notification.js';
+import Patient from './patient.js';
 import Treatment from './treatment.js';
 
-// --- Doctor & Department ---
-Doctor.belongsTo(Department, { foreignKey: 'departmentId', as: 'department' });
-Department.hasMany(Doctor, { foreignKey: 'departmentId', as: 'doctors' });
+// Example associations
+Doctor.belongsTo(Department, { foreignKey: 'departmentId' });
+Doctor.hasMany(Appointment, { foreignKey: 'doctorId' });
+Patient.hasMany(Appointment, { foreignKey: 'patientId' });
+Appointment.hasOne(Bill, { foreignKey: 'appointmentId' });
+Patient.hasMany(Feedback, { foreignKey: 'patientId' });
+Doctor.hasMany(Feedback, { foreignKey: 'doctorId' });
+Appointment.belongsTo(Patient);
+Appointment.belongsTo(Doctor);
+Treatment.belongsTo(Appointment);
+Patient.hasMany(Appointment, { foreignKey: 'patientId' });
+Appointment.belongsTo(Patient, { foreignKey: 'patientId' });
 
-// --- Appointment with Patient and Doctor ---
-Appointment.belongsTo(Patient, { foreignKey: 'patientId', as: 'patient' });
-Patient.hasMany(Appointment, { foreignKey: 'patientId', as: 'appointments' });
+Appointment.hasMany(Bill, { foreignKey: 'appointmentId' });
+Appointment.belongsTo(Doctor, { as: 'Doctor', foreignKey: 'doctorId' });
 
-Appointment.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'doctor' });
-Doctor.hasMany(Appointment, { foreignKey: 'doctorId', as: 'appointments' });
+// Bill model
+Bill.belongsTo(Appointment, { foreignKey: 'appointmentId' });
 
-// --- Bill for Appointment (1-to-1) ---
-Bill.belongsTo(Appointment, { foreignKey: 'appointmentId', as: 'appointment' });
-Appointment.hasOne(Bill, { foreignKey: 'appointmentId', as: 'bill' });
+// Doctor model associations
+Doctor.hasMany(Appointment, { foreignKey: 'doctorId' });
 
-// --- Feedback for Appointment (1-to-1) ---
-Feedback.belongsTo(Appointment, { foreignKey: 'appointmentId', as: 'appointment' });
-Appointment.hasOne(Feedback, { foreignKey: 'appointmentId', as: 'feedback' });
+// Patient model associations
+Patient.hasMany(Appointment, { foreignKey: 'patientId' });
 
-// --- Treatment for Appointment (1-to-1) ---
-Treatment.belongsTo(Appointment, { foreignKey: 'appointmentId', as: 'appointment' });
-Appointment.hasOne(Treatment, { foreignKey: 'appointmentId', as: 'treatment' });
-
-// --- Notification for Patient (many-to-one) ---
-Notification.belongsTo(Patient, { foreignKey: 'patientId', as: 'patient' });
-Patient.hasMany(Notification, { foreignKey: 'patientId', as: 'notifications' });
+Doctor.hasMany(Appointment, { foreignKey: 'doctorId' });
+Appointment.belongsTo(Doctor, { foreignKey: 'doctorId', as: 'Doctor' });
 
 
+export { Admin, Appointment, Bill, Department, Doctor, Feedback, Notification, Patient, Treatment };

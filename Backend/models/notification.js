@@ -2,9 +2,22 @@ import { DataTypes } from 'sequelize';
 import sequelize from '../config/db.js';
 
 const Notification = sequelize.define('Notification', {
-  title: { type: DataTypes.STRING, allowNull: false },
-  message: { type: DataTypes.TEXT, allowNull: false },
-  seen: { type: DataTypes.BOOLEAN, defaultValue: false }
+  type: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  message: {
+    type: DataTypes.TEXT,
+    allowNull: false
+  },
+  time: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  },
+  isRead: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  }
 });
 
 export default Notification;
