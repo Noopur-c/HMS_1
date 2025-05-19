@@ -1,6 +1,27 @@
 import { Appointment, Treatment, Bill, Patient } from '../models/index.js';
 import { Doctor, Notification } from '../models/index.js';
 
+export async function getAllAppointments(req, res) {
+  try {
+    const appointments = await Appointment.findAll({
+      include: [
+        {
+          model: Doctor,
+          attributes: ['id', 'name'] // include doctor's id and name
+        },
+        {
+          model: Patient,
+          attributes: ['id', 'name'] // include patient's id and name
+        }
+      ]
+    });
+    res.json(appointments);
+  } catch (err) {
+    console.error('Error fetching appointments:', err);
+    res.status(500).json({ error: 'Failed to retrieve appointments' });
+  }
+}
+
 // Get pending appointments
 export async function getPendingAppointments(req, res) {
   const { doctorId } = req.params;
@@ -51,28 +72,56 @@ export async function updateAppointmentStatus(req, res) {
 
 // Today's appointments
 export async function getTodaysAppointments(req, res) {
-  const { doctorId } = req.params;
-  const today = new Date().toISOString().split('T')[0];
+   const { doctorId } = req.params;
+
   try {
     const appointments = await Appointment.findAll({
-      where: { doctorId, date: today, status: 'approved' },
-      include: Patient
+      where: { status: 'Confirmed' }, 
+      include: [
+        { model: Patient, attributes: ['id', 'name'] },
+        { model: Doctor, attributes: ['id', 'name'] }
+      ]
     });
     res.json(appointments);
   } catch (err) {
-    res.status(500).json({ error: 'Could not get today\'s appointments' });
+    console.error(err);
+    res.status(500).json({ error: "Could not get appointments" });
   }
 }
 
 // Update treatment
-export async function updateTreatment(req, res) {
-  const { appointmentId, disease, prescription, progress } = req.body;
+export async function updateTreatment(req, res)  {
+  const { patientId, doctorId, date, time, diagnosis, treatmentDetails, prescription } = req.body;
+
+  if (!patientId || !doctorId || !diagnosis || !treatmentDetails || !prescription || !date || !time) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
   try {
-    const treatment = await Treatment.create({ appointmentId, disease, prescription, progress });
-    await Appointment.update({ status: 'completed' }, { where: { id: appointmentId } });
-    res.json(treatment);
+    // Step 1: Create the appointment
+    const appointment = await Appointment.create({
+      patientId,
+      doctorId,
+      date,
+      time,
+      status: 'Confirmed'
+    });
+
+    // Step 2: Create the treatment using the appointment ID
+    const treatment = await Treatment.create({
+      patientId,
+      doctorId,
+      appointmentId: appointment.id,
+      diagnosis,
+      treatmentDetails,
+      prescription,
+      date
+    });
+
+    res.status(201).json({ message: "Treatment and appointment created successfully", treatment });
   } catch (err) {
-    res.status(500).json({ error: 'Could not update treatment' });
+    console.error(err);
+    res.status(500).json({ error: "Failed to add treatment and appointment" });
   }
 }
 
@@ -87,19 +136,74 @@ export async function generateBill(req, res) {
   }
 }
 
-// View patient history
-export async function getPatientHistory(req, res) {
-  const { doctorId } = req.params;
+
+export async function getAllPatientHistories(req, res) {
   try {
-    const treatments = await Treatment.findAll({
-      include: {
-        model: Appointment,
-        where: { doctorId, status: 'completed' },
-        include: Patient
-      }
+    const treatmentHistories = await Treatment.findAll({
+      attributes: ['id', 'diagnosis', 'treatmentDetails', 'prescription', 'date', 'createdAt', 'updatedAt', 'patientId', 'doctorId', 'appointmentId'],
+      include: [
+        {
+          model: Appointment,
+          attributes: ['id', 'date', 'time', 'status', 'createdAt', 'updatedAt', 'patientId', 'doctorId'], // Only the correct attributes for Appointment
+          include: [
+            {
+              model: Patient,
+              attributes: ['id', 'name', 'email', 'phone', 'dob', 'gender', 'address', 'createdAt', 'updatedAt'] // Updated Patient attributes
+            },
+            {
+              model: Doctor,
+              attributes: ['id', 'name', 'email', 'phone', 'specialization', 'availability', 'experience', 'salary', 'createdAt', 'updatedAt', 'departmentId'] // Updated Doctor attributes
+            }
+          ]
+        }
+      ],
+      where: {
+        '$Appointment.status$': 'completed'
+      },
+      order: [['date', 'DESC']]
     });
-    res.json(treatments);
-  } catch (err) {
-    res.status(500).json({ error: 'Error fetching history' });
+
+    return res.status(200).json({ treatmentHistories });
+  } catch (error) {
+    console.error('Error fetching treatment histories:', error);
+    return res.status(500).json({ message: 'Error fetching treatment histories' });
   }
 }
+
+export async function getAllPatients(req, res)  {
+  try {
+    const patients = await Patient.findAll();
+    res.status(200).json(patients);
+  } catch (error) {
+    console.error('Error fetching patients:', error);
+    res.status(500).json({ message: 'Failed to fetch patients', error });
+  }
+};
+
+export async function getTheAppointments(req, res) {
+  try {
+    const appointments = await Appointment.findAll();
+    res.status(200).json(appointments);
+  } catch (error) {
+    console.error('Error fetching appointments:', error);
+    res.status(500).json({ message: 'Failed to fetch appointments', error });
+  }
+};
+
+export async function getDoctorsByDepartment(req, res) {
+  const { department } = req.query;
+
+  if (!department) return res.status(400).json({ error: 'Department is required' });
+
+  try {
+    const doctors = await Doctor.findAll({
+      where: { specialization: department },
+      attributes: ['id', 'name']
+    });
+
+    res.status(200).json(doctors);
+  } catch (err) {
+    console.error('Error fetching doctors:', err);
+    res.status(500).json({ error: 'Failed to fetch doctors' });
+  }
+};
