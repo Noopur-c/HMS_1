@@ -1,24 +1,32 @@
 import { Router } from 'express';
+import {
+  getBillsByPatientName,
+  bookAppointment,
+  getNotifications,
+  getTreatmentHistoryByPatientName,
+  getAppointmentsByPatientName,
+  submitFeedback,
+  populateNotifications,
+  getAppointmentsPatientName
+} from '../controllers/patientController.js';
+import Patient from '../models/patient.js';
+
 const router = Router();
-import { getProfile, getCurrentAppointment, getBillHistory, getTreatmentHistory, requestAppointment, leaveFeedback } from '../controllers/patientController.js';
-import { verifyToken } from '../middleware/authMiddleware.js';
 
-// Profile
-router.get('/:patientId/profile', verifyToken(['patient']), getProfile);
+router.get('/appointments/by-name/:name', getAppointmentsByPatientName);
+router.get('/treatment-history/name/:name', getTreatmentHistoryByPatientName);
+router.get('/appointments-bills', getBillsByPatientName);
+router.post('/appointments', bookAppointment);
+router.get('/notifications/:patientName', getNotifications);
+router.get('/appointments/by-name', getAppointmentsPatientName);
+router.post('/feedback', submitFeedback);
+router.post('/populate', populateNotifications); 
 
-// Current appointment
-router.get('/:patientId/current-appointment', verifyToken(['patient']), getCurrentAppointment);
-
-// Bill history
-router.get('/:patientId/bills', verifyToken(['patient']), getBillHistory);
-
-// Treatment history
-router.get('/:patientId/treatments', verifyToken(['patient']), getTreatmentHistory);
-
-// Request appointment
-router.post('/:patientId/request-appointment', verifyToken(['patient']), requestAppointment);
-
-// Leave feedback
-router.post('/:patientId/feedback', verifyToken(['patient']), leaveFeedback);
+router.get('/test', (req, res) => {
+  res.send('Patient route is working');
+});
 
 export default router;
+
+
+
