@@ -2,7 +2,7 @@ import { Sequelize } from 'sequelize';
 
 // Directly pass the configuration values here
 const sequelize = new Sequelize(
-  'hospital_db',      
+  'hms_db',      
   'root',            
   'Noopur',          
   {

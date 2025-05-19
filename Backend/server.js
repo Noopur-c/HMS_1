@@ -1,34 +1,50 @@
 import express from 'express';
-import {json} from 'express';
-const app = express();
-import { sequelize } from './models/index.js';
+import { json } from 'express';
 import cors from 'cors';
-app.use(cors());
-
-
-app.use(json());
+import { sequelize } from './models/index.js';
+import PatientsNotification from './models/patientsNotification.js';
 
 // Route imports
 import patientRoutes from './routes/patientRoutes.js';
 import doctorRoutes from './routes/doctorRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
-
 import authRoutes from './routes/authRoutes.js';
-app.use('/api/auth', authRoutes);
-
 import notificationRoutes from './routes/notificationRoutes.js';
-app.use('/api/notifications', notificationRoutes);
+import departmentRoutes from './routes/departmentRoutes.js';
+import appointmentRoutes from './routes/appointmentRoutes.js';
 
-// Route mounting
+const app = express();
+
+// ✅ Enable CORS for frontend on port 4200 with credentials
+app.use(cors({
+  origin: 'http://localhost:4200',
+  credentials: true
+}));
+
+app.use(json()); // for parsing application/json
+
+// ✅ Mount routes
+app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
+console.log('Mounting patient routes at /patients');
 app.use('/api/doctors', doctorRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/api/admins', adminRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/departments', departmentRoutes);
+app.use('/api/appointments', appointmentRoutes);
 
-// Start
-sequelize.sync().then(() => {
-  app.listen(3000, () => {
-    console.log('🔥 Server running on http://localhost:3000');
+// ✅ Start server
+sequelize.sync({ alter: true })
+  .then(() => {
+    console.log('Database synced successfully');
+  })
+  .catch((err) => {
+    console.error('Database sync error:', err);
   });
+
+app.listen(3000, () => {
+  console.log('Server running on port 3000');
 });
+
 
 
