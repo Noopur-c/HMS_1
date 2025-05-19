@@ -5,6 +5,29 @@ import { Patient, Doctor, Admin } from '../models/index.js';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey';
 
+export async function loginDoctor(req, res) {
+  const { email, password } = req.body;
+
+  // Mock doctor data (replace with your own)
+  const mockDoctor = {
+    email: 'doctor@example.com',
+    password: 'password123',  // plaintext password
+    name: 'Dr. Alice',
+    id: 1,
+    role: 'doctor'
+  };
+
+  // Check if the provided email and password match the mock data
+  if (email === mockDoctor.email && password === mockDoctor.password) {
+    const token = generateToken(mockDoctor, 'doctor');
+    return res.json({ token, doctor: mockDoctor });
+  }
+
+  // If credentials don't match, return an error
+  return res.status(401).json({ error: 'Invalid credentials' });
+}
+
+
 // 🔐 Generate token
 function generateToken(user, role) {
   return sign({ id: user.id, role }, JWT_SECRET, { expiresIn: '1d' });
@@ -21,7 +44,7 @@ export async function loginPatient(req, res) {
   res.json({ token, patient });
 }
 
-// 🧑‍⚕️ Doctor login
+/* 🧑‍⚕️ Doctor login
 export async function loginDoctor(req, res) {
   const { email, password } = req.body;
   const doctor = await Doctor.findOne({ where: { email } });
@@ -30,7 +53,7 @@ export async function loginDoctor(req, res) {
   }
   const token = generateToken(doctor, 'doctor');
   res.json({ token, doctor });
-}
+}*/
 
 // 👨‍💼 Admin login
 export async function loginAdmin(req, res) {
