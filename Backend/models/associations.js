@@ -21,7 +21,6 @@ Treatment.belongsTo(Appointment);
 Patient.hasMany(Appointment, { foreignKey: 'patientId' });
 Appointment.belongsTo(Patient, { foreignKey: 'patientId' });
 
-Appointment.hasMany(Bill, { foreignKey: 'appointmentId' });
 Appointment.belongsTo(Doctor, { as: 'Doctor', foreignKey: 'doctorId' });
 
 // Bill model

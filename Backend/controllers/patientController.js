@@ -1,11 +1,11 @@
 import { Appointment, Treatment, Bill, Notification, Doctor, Patient, PatientsNotification, Feedback } from '../models/index.js';
 import { Op } from 'sequelize';
+import { Sequelize } from 'sequelize';
 
 export async function getAppointmentsByPatientName(req, res) {
   const { name } = req.params;
 
   try {
-    // Find patient(s) with matching name (case-insensitive)
     const patients = await Patient.findAll({
       where: {
         name: {
@@ -20,7 +20,6 @@ export async function getAppointmentsByPatientName(req, res) {
 
     const patientIds = patients.map(p => p.id);
 
-    // Find appointments for the matched patients
     const appointments = await Appointment.findAll({
       where: {
         patientId: {
@@ -40,7 +39,6 @@ export async function getAppointmentsByPatientName(req, res) {
   }
 }
 
-// Get treatment history of a patient
 export async function getTreatmentHistoryByPatientName(req, res) {
   const { name } = req.params;
   try {
@@ -73,41 +71,44 @@ export async function getTreatmentHistoryByPatientName(req, res) {
   }
 }
 
-
-// Get bills for a patient
-export async function getBillsByPatientName (req, res) {
+export async function getBillsByPatientName(req, res) {
   const { patientName } = req.query;
 
   try {
-    // Find patient by name first
-    const patient = await Patient.findOne({ where: { name: patientName } });
+    const patient = await Patient.findOne({
+  where: Sequelize.where(
+    Sequelize.fn('LOWER', Sequelize.col('name')),
+    Sequelize.fn('LOWER', patientName)
+  )
+});
+
 
     if (!patient) {
       return res.status(404).json({ message: 'Patient not found' });
     }
 
-    // Get all appointments for this patient including bills and doctor info
     const appointments = await Appointment.findAll({
       where: { patientId: patient.id },
       include: [
-        { model: Bill },
+        {
+          model: Bill,
+        },
         {
           model: Doctor,
-          as: 'Doctor',  // alias as defined in your associations
-          attributes: ['name'],  // only select doctor name
+          as: 'Doctor', // MUST match the alias in association
+          attributes: ['name'],
         },
       ],
     });
+    console.log(JSON.stringify(appointments, null, 2));
 
     res.json(appointments);
   } catch (error) {
     console.error('Error fetching bills by patient name:', error);
     res.status(500).json({ message: 'Internal server error' });
   }
-};
+}
 
-
-// Book appointment
 export async function bookAppointment(req, res) {
   const { patientId, doctorId, date, time } = req.body;
 
@@ -168,7 +169,6 @@ export async function bookAppointment(req, res) {
   }
 }
 
-// Get notifications for a patient
 export async function getNotifications(req, res) {
   let { patientName } = req.params;
 
@@ -215,8 +215,6 @@ export async function getNotifications(req, res) {
   }
 }
 
-
-// Submit feedback (optional)
 export async function getAppointmentsPatientName(req, res) {
   const { name } = req.query;
 
@@ -259,9 +257,6 @@ export async function getAppointmentsPatientName(req, res) {
   }
 }
 
-
-
-// Submit feedback
 export async function submitFeedback(req, res) {
   const { patientId, doctorId, appointmentId, message, rating } = req.body;
 
